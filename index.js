@@ -30,7 +30,8 @@ module.exports = class Hyperswarm extends EventEmitter {
       maxClientConnections = MAX_CLIENT_CONNECTIONS,
       maxServerConnections = MAX_SERVER_CONNECTIONS,
       maxParallel = MAX_PARALLEL,
-      firewall = allowAll
+      firewall = allowAll,
+      alwaysReconnect = false
     } = opts
     this.keyPair = keyPair
 
@@ -72,6 +73,7 @@ module.exports = class Hyperswarm extends EventEmitter {
     this._clientConnections = 0
     this._serverConnections = 0
     this._firewall = firewall
+    this._alwaysReconnect = alwaysReconnect
 
     this.dht.on('network-change', this._handleNetworkChange.bind(this))
   }
@@ -189,7 +191,7 @@ module.exports = class Hyperswarm extends EventEmitter {
         // Reset the attempts in order to fast connect to relay
         peerInfo.attempts = 0
       }
-      if (err.code === 'ECONNRESET') {
+      if (!this._alwaysReconnect && err.code === 'ECONNRESET') {
         peerInfo.reconnect(false)
       }
     })
@@ -299,7 +301,7 @@ module.exports = class Hyperswarm extends EventEmitter {
     this._serverConnections++
 
     conn.on('error', (err) => {
-      if (err.code === 'ECONNRESET') {
+      if (!this._alwaysReconnect && err.code === 'ECONNRESET') {
         peerInfo.reconnect(false)
       }
     })
