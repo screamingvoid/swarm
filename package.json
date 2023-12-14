@@ -1,5 +1,5 @@
 {
-  "name": "hyperswarm",
+  "name": "@screamingvoid/swarm",
   "version": "4.7.13",
   "description": "A distributed networking stack for connecting peers",
   "files": [
