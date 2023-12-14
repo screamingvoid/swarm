@@ -19,7 +19,7 @@ const ERR_DUPLICATE = 'Duplicate connection'
 
 const KEEP_ALIVE = b4a.alloc(0)
 
-module.exports = class Hyperswarm extends EventEmitter {
+module.exports = class Swarm extends EventEmitter {
   constructor (opts = {}) {
     super()
     const {
