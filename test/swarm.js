@@ -76,8 +76,8 @@ test('two servers - first connection', async (t) => {
 test('one server, one client - single reconnect', async (t) => {
   const { bootstrap } = await createTestnet(3, t.teardown)
 
-  const swarm1 = new Hyperswarm({ bootstrap, backoffs: BACKOFFS, jitter: 0 })
-  const swarm2 = new Hyperswarm({ bootstrap, backoffs: BACKOFFS, jitter: 0 })
+  const swarm1 = new Hyperswarm({ bootstrap, backoffs: BACKOFFS, jitter: 0, alwaysReconnect: true })
+  const swarm2 = new Hyperswarm({ bootstrap, backoffs: BACKOFFS, jitter: 0, alwaysReconnect: true })
 
   const serverReconnectsTest = t.test('server reconnects')
   const clientReconnectsTest = t.test('client reconnects')

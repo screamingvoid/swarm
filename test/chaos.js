@@ -31,7 +31,7 @@ test('chaos - recovers after random disconnections (takes ~60s)', async (t) => {
   const peersBySwarm = new Map()
 
   for (let i = 0; i < NUM_SWARMS; i++) {
-    const swarm = new Hyperswarm({ bootstrap, backoffs: BACKOFFS, jitter: 0 })
+    const swarm = new Hyperswarm({ bootstrap, backoffs: BACKOFFS, jitter: 0, alwaysReconnect: true })
     swarms.push(swarm)
     peersBySwarm.set(swarm, new Set())
     swarm.on('connection', conn => {

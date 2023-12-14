@@ -137,13 +137,6 @@ test('leave peer - no memory leak if other side closed connection first', async 
   let hasBeen1 = false
   swarm1.on('update', async () => {
     if (swarm1.peers.size > 0) hasBeen1 = true
-    if (hasBeen1 && swarm1.peers.size === 0) {
-      t.pass('No peerInfo memory leak')
-      t.is(swarm1.explicitPeers.size, 0)
-      t.is(swarm1.connections.size, 0)
-
-      swarm1.destroy()
-    }
   })
 
   await swarm2.listen() // Ensure that swarm2's public key is being announced
@@ -182,6 +175,16 @@ test('leave peer - no memory leak if other side closed connection first', async 
   t.is(swarm1.explicitPeers.size, 1)
 
   swarm1.leavePeer(swarm2.keyPair.publicKey)
+
+  // Final update doesn't emit since we're not trying to reconnect
+  // This *may* be flaky, but seems to work
+  if (hasBeen1 && swarm1.peers.size === 0) {
+    t.pass('No peerInfo memory leak')
+    t.is(swarm1.explicitPeers.size, 0)
+    t.is(swarm1.connections.size, 0)
+
+    swarm1.destroy()
+  }
 })
 
 function noop () {}
