@@ -189,6 +189,9 @@ module.exports = class Hyperswarm extends EventEmitter {
         // Reset the attempts in order to fast connect to relay
         peerInfo.attempts = 0
       }
+      if (err.code === 'ECONNRESET') {
+        peerInfo.reconnect(false)
+      }
     })
     conn.on('close', () => {
       if (!opened) this._connectDone()
@@ -295,6 +298,11 @@ module.exports = class Hyperswarm extends EventEmitter {
     this._allConnections.add(conn)
     this._serverConnections++
 
+    conn.on('error', (err) => {
+      if (err.code === 'ECONNRESET') {
+        peerInfo.reconnect(false)
+      }
+    })
     conn.on('close', () => {
       this.connections.delete(conn)
       this._allConnections.delete(conn)
