@@ -383,10 +383,14 @@ module.exports = class Swarm extends EventEmitter {
       const peersToDrop = []
       for (const peer of peers) {
         let drop = false
+        let lastPeer = false
         for (const topic of peer.topics) {
           const hex = b4a.toString(topic, 'hex')
-          drop = peersPerTopic.get(hex)?.length >= medianPeers
+          const numPeers = peersPerTopic.get(hex)?.length
+          lastPeer = numPeers === 1
+          drop = numPeers >= medianPeers
         }
+        if (lastPeer) continue
         if (drop) peersToDrop.push(peer.publicKey)
         if (peersToDrop.length >= numPeers) break
       }
