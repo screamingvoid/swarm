@@ -16,6 +16,7 @@ async function runTests () {
   await import('./suspend.js')
   await import('./swarm.js')
   await import('./update.js')
+  await import('./topics.js')
 
   test.resume()
 }
