@@ -1,5 +1,5 @@
 const test = require('brittle')
-const createTestnet = require('hyperdht/testnet')
+const createTestnet = require('@screamingvoid/dht/testnet')
 const Hyperswarm = require('../')
 
 test('many servers', async t => {

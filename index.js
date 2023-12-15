@@ -321,7 +321,7 @@ module.exports = class Swarm extends EventEmitter {
     })
     peerInfo.client = false
 
-    if (payload.userData?.topics) {
+    if (payload?.userData?.topics) {
       for (const topic of payload.userData.topics) {
         peerInfo._topic(topic)
       }
