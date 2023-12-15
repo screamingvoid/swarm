@@ -1,5 +1,5 @@
 const { EventEmitter } = require('events')
-const DHT = require('hyperdht')
+const DHT = require('@screamingvoid/dht')
 const spq = require('shuffled-priority-queue')
 const b4a = require('b4a')
 
@@ -165,7 +165,10 @@ module.exports = class Swarm extends EventEmitter {
     const conn = this.dht.connect(peerInfo.publicKey, {
       relayAddresses: peerInfo.relayAddresses,
       keyPair: this.keyPair,
-      relayThrough
+      relayThrough,
+      userData: {
+        topics: [...this.topics()].map((t) => t.topic)
+      }
     })
     this._allConnections.add(conn)
 
@@ -267,7 +270,7 @@ module.exports = class Swarm extends EventEmitter {
   }
 
   // Called when the DHT receives a new server connection.
-  _handleServerConnection (conn) {
+  _handleServerConnection (conn, payload) {
     if (this.destroyed) {
       // TODO: Investigate why a final server connection can be received after close
       conn.on('error', noop)
@@ -317,6 +320,13 @@ module.exports = class Swarm extends EventEmitter {
       this.emit('update')
     })
     peerInfo.client = false
+
+    if (payload.userData?.topics) {
+      for (const topic of payload.userData.topics) {
+        peerInfo._topic(topic)
+      }
+    }
+
     this.emit('connection', conn, peerInfo)
 
     this.emit('update')
