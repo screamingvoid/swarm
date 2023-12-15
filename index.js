@@ -31,7 +31,8 @@ module.exports = class Swarm extends EventEmitter {
       maxServerConnections = MAX_SERVER_CONNECTIONS,
       maxParallel = MAX_PARALLEL,
       firewall = allowAll,
-      alwaysReconnect = false
+      alwaysReconnect = false,
+      dropConnections = true
     } = opts
     this.keyPair = keyPair
 
@@ -74,6 +75,7 @@ module.exports = class Swarm extends EventEmitter {
     this._serverConnections = 0
     this._firewall = firewall
     this._alwaysReconnect = alwaysReconnect
+    this._dropConnections = dropConnections
 
     this.dht.on('network-change', this._handleNetworkChange.bind(this))
   }
@@ -230,6 +232,7 @@ module.exports = class Swarm extends EventEmitter {
     // Guard against re-entries - unsure if it still needed but doesn't hurt
     if (this._drainingQueue) return
     this._drainingQueue = true
+    this._maybeDropConnections()
     while (this._queue.length && this._shouldConnect()) {
       const peerInfo = this._queue.shift()
       peerInfo.queued = false
@@ -359,6 +362,36 @@ module.exports = class Swarm extends EventEmitter {
 
     const keyString = b4a.toString(peerInfo.publicKey, 'hex')
     this.peers.delete(keyString)
+  }
+
+  _maybeDropConnections () {
+    if (this._dropConnections && this._allConnections.size >= this.maxPeers) {
+      const peersPerTopic = new Map()
+      const peers = [...this.peers.values()].sort((a, b) => b.topics.length - a.topics.length)
+      for (const peer of peers) {
+        for (const topic of peer.topics) {
+          const hex = b4a.toString(topic, 'hex')
+          if (peersPerTopic.has(hex)) {
+            peersPerTopic.get(hex).push(peer.publicKey)
+          } else {
+            peersPerTopic.set(hex, [peer.publicKey])
+          }
+        }
+      }
+      const numPeers = Math.floor(this.maxPeers * 0.15)
+      const medianPeers = median([...peersPerTopic.values()].map((p) => p.length))
+      const peersToDrop = []
+      for (const peer of peers) {
+        let drop = false
+        for (const topic of peer.topics) {
+          const hex = b4a.toString(topic, 'hex')
+          drop = peersPerTopic.get(hex)?.length >= medianPeers
+        }
+        if (drop) peersToDrop.push(peer.publicKey)
+        if (peersToDrop.length >= numPeers) break
+      }
+      peersToDrop.forEach((pk) => this._allConnections.get(pk)?.destroy())
+    }
   }
 
   /*
@@ -546,4 +579,14 @@ function shouldForceRelaying (code) {
   return (code === 'HOLEPUNCH_ABORTED') ||
     (code === 'HOLEPUNCH_DOUBLE_RANDOMIZED_NATS') ||
     (code === 'REMOTE_NOT_HOLEPUNCHABLE')
+}
+
+function median (arr) {
+  const sorted = arr.sort(function (a, b) {
+    return a >= b ? 1 : -1
+  })
+  const lowerMiddleRank = Math.floor(arr.length / 2)
+  return arr.length / 2 !== lowerMiddleRank
+    ? sorted[lowerMiddleRank]
+    : (sorted[lowerMiddleRank] + sorted[lowerMiddleRank - 1]) / 2
 }
