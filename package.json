@@ -1,13 +1,13 @@
 {
   "name": "@screamingvoid/swarm",
-  "version": "4.7.13",
+  "version": "0.1.40713",
   "description": "A distributed networking stack for connecting peers",
   "files": [
     "index.js",
     "lib/**.js"
   ],
   "dependencies": {
-    "@screamingvoid/dht": "file:../dht",
+    "@screamingvoid/dht": "*",
     "b4a": "^1.3.1",
     "events": "^3.3.0",
     "hyperdht": "^6.11.0",
@@ -25,16 +25,21 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/holepunchto/hyperswarm.git"
+    "url": "git@github.com:screamingvoid/swarm.git"
   },
   "author": "Mathias Buus (@mafintosh)",
   "contributors": [
     "David Mark Clements (@davidmarkclem)",
-    "Andrew Osheroff (@andrewosh)"
+    "Andrew Osheroff (@andrewosh)",
+    {
+      "name": "Tomas Ravinskas",
+      "email": "tomas@tomasrav.me",
+      "url": "https://tomasrav.me/"
+    }
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/holepunchto/hyperswarm/issues"
+    "url": "https://github.com/screamingvoid/swarm/issues"
   },
-  "homepage": "https://github.com/holepunchto/hyperswarm"
+  "homepage": "https://screamingvoid.me/"
 }
